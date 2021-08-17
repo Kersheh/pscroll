@@ -1,0 +1,32 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<App /> should render 1`] = `
+<div>
+  <div
+    class="app"
+    id="app"
+  >
+    <div
+      class="appWrapper"
+    >
+      <div
+        class="column"
+      />
+      <div
+        class="column"
+      />
+      <div
+        class="column"
+      />
+    </div>
+    <button
+      class="scroll"
+      type="button"
+    >
+      <svg>
+        arrow-down.svg
+      </svg>
+    </button>
+  </div>
+</div>
+`;
