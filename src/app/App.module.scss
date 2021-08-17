@@ -1,20 +1,5 @@
 @import 'src/styles/partials/colors';
-
-@mixin action-btn {
-  position: absolute;
-  border: 0;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  svg {
-    width: 80%;
-    height: 80%;
-    fill: rgba($black, 0.9);
-  }
-}
+@import 'src/styles/partials/mixins';
 
 @mixin overlay-btn {
   height: 2rem;
@@ -96,17 +81,53 @@
     }
   }
 
-  .scroll {
+  .scrollBtn,
+  .scrollSpeed {
     @include action-btn;
-    bottom: 1rem;
-    left: 1rem;
-    height: 3rem;
-    width: 3rem;
     background-color: $secondary-black;
     box-shadow: 0 0 10px rgba($black, 0.7);
 
     svg {
       fill: rgba($white, 0.9);
+    }
+  }
+
+  .scrollBtn {
+    bottom: 1rem;
+    left: 1rem;
+    height: 3rem;
+    width: 3rem;
+  }
+
+  .scrollSpeed {
+    transition: height 200ms ease-in;
+    cursor: default;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    bottom: 4.4rem;
+    left: 1rem;
+    height: 202px;
+    border-radius: 3rem;
+    width: 3rem;
+    overflow: hidden;
+
+    button {
+      cursor: pointer;
+      background-color: transparent;
+      border: 0;
+      color: $white;
+      text-transform: uppercase;
+      padding: 0.7rem;
+
+      &.active {
+        font-weight: 700;
+      }
+    }
+
+    &Collapsed {
+      height: 0;
     }
   }
 }

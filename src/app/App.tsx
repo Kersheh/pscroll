@@ -1,22 +1,19 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { shuffle, fill } from 'lodash';
 import useBreakpoint from 'use-breakpoint';
 
 import { importAllFiles } from 'src/utils';
+import { BREAKPOINTS, BREAKPOINT_COLUMNS, SCROLL_SPEEDS } from 'src/utils/constants';
 import { ReactComponent as ArrowDownIcon } from 'src/styles/icons/arrow-down.svg';
 import { ReactComponent as CloseIcon } from 'src/styles/icons/close.svg';
 import MediaContainer from 'src/components/MediaContainer/MediaContainer';
 import styles from './App.module.scss';
 import MediaOverlayContainer from 'src/components/MediaOverlayContainer/MediaOverlayContainer';
-import { useCallback } from 'react';
 
 // import gallery of media directly from project; TODO: enable user to select folder from UI
 const importedMedia: Record<string, string> = importAllFiles(
   require.context('../img', false, /\.(gif|png|jpe?g|svg|mp4)$/i)
 );
-
-const BREAKPOINTS = { sm: 0, md: 600, lg: 1280, xl: 1920 };
-const BREAKPOINT_COLUMNS = { sm: 1, md: 2, lg: 3, xl: 4 };
 
 const App = () => {
   const { breakpoint } = useBreakpoint(BREAKPOINTS, 'lg');
@@ -24,6 +21,9 @@ const App = () => {
   const [isScroll, setIsScroll] = useState(false);
   const [wasScroll, setWasScroll] = useState(false);
   const [activeOverlayMediaSrc, setActiveOverlayMediaSrc] = useState<string | null>(null);
+  const [scrollSpeed, setScrollSpeed] = useState(SCROLL_SPEEDS.m);
+  const [showScrollSpeed, setShowScrollSpeed] = useState(false);
+  const scrollMenuRef = useRef<HTMLDivElement>(null);
 
   // set media srcs from imported media and randomize order
   useEffect(() => importedMedia && setMediaSrcs(shuffle(importedMedia)), []);
@@ -43,20 +43,20 @@ const App = () => {
     );
   }, [mediaSrcs, breakpoint]);
 
-  // handle autoscroll; TODO: add more speed variations
+  // handle autoscroll based on active scroll speed when enabled
   useEffect(() => {
     const appRef = document.getElementById('app');
 
     if (isScroll && appRef) {
       const interval = setInterval(() => {
-        appRef.scrollBy({ top: 12, behavior: 'smooth' });
-      }, 32);
+        appRef.scrollBy({ top: scrollSpeed.px, behavior: 'smooth' });
+      }, scrollSpeed.t);
 
       return () => {
         clearInterval(interval);
       };
     }
-  }, [isScroll]);
+  }, [isScroll, scrollSpeed]);
 
   // set media to next/previous overlay option
   const changeOverlayMedia = useCallback(
@@ -73,6 +73,25 @@ const App = () => {
     },
     [activeOverlayMediaSrc]
   );
+
+  // handle mouseover to display scroll speed menu
+  useEffect(() => {
+    const ref = scrollMenuRef.current;
+    if (isScroll && ref) {
+      const mouseOverHandler = () => setShowScrollSpeed(true);
+      const mouseOutHandler = () => setShowScrollSpeed(false);
+
+      ref.addEventListener('mouseover', mouseOverHandler);
+      ref.addEventListener('mouseout', mouseOutHandler);
+
+      return () => {
+        ref.removeEventListener('mouseover', mouseOverHandler);
+        ref.removeEventListener('mouseout', mouseOutHandler);
+      };
+    } else {
+      setShowScrollSpeed(false);
+    }
+  }, [isScroll]);
 
   return (
     <div id="app" className={styles.app}>
@@ -102,9 +121,49 @@ const App = () => {
         ))}
       </div>
 
-      <button type="button" className={styles.scroll} onClick={() => setIsScroll(!isScroll)}>
-        {isScroll ? <CloseIcon /> : <ArrowDownIcon />}
-      </button>
+      <div ref={scrollMenuRef}>
+        <button type="button" className={styles.scrollBtn} onClick={() => setIsScroll(!isScroll)}>
+          {isScroll ? <CloseIcon /> : <ArrowDownIcon />}
+        </button>
+
+        <div className={`${styles.scrollSpeed} ${!isScroll && !showScrollSpeed ? styles.scrollSpeedCollapsed : ''}`}>
+          <button
+            type="button"
+            className={scrollSpeed.px === SCROLL_SPEEDS.vs.px ? styles.active : ''}
+            onClick={() => setScrollSpeed(SCROLL_SPEEDS.vs)}
+          >
+            vs
+          </button>
+          <button
+            type="button"
+            className={scrollSpeed.px === SCROLL_SPEEDS.s.px ? styles.active : ''}
+            onClick={() => setScrollSpeed(SCROLL_SPEEDS.s)}
+          >
+            s
+          </button>
+          <button
+            type="button"
+            className={scrollSpeed.px === SCROLL_SPEEDS.m.px ? styles.active : ''}
+            onClick={() => setScrollSpeed(SCROLL_SPEEDS.m)}
+          >
+            m
+          </button>
+          <button
+            type="button"
+            className={scrollSpeed.px === SCROLL_SPEEDS.f.px ? styles.active : ''}
+            onClick={() => setScrollSpeed(SCROLL_SPEEDS.f)}
+          >
+            f
+          </button>
+          <button
+            type="button"
+            className={scrollSpeed.px === SCROLL_SPEEDS.vf.px ? styles.active : ''}
+            onClick={() => setScrollSpeed(SCROLL_SPEEDS.vf)}
+          >
+            vf
+          </button>
+        </div>
+      </div>
 
       {activeOverlayMediaSrc && (
         <MediaOverlayContainer
