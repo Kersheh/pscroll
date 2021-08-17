@@ -42,7 +42,7 @@
       flex-direction: column;
     }
 
-    .image {
+    .media {
       box-sizing: border-box;
       max-width: calc(100vw / 4);
 
@@ -86,11 +86,11 @@
     align-items: center;
     z-index: 2;
 
-    .imageWrapper {
+    .mediaWrapper {
       position: relative;
     }
 
-    .image {
+    .media {
       max-width: 100vw;
       max-height: 100vh;
       position: relative;

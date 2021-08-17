@@ -1,3 +1,3 @@
 # pscroll (Pending Name)
 
-A simple dynamically resizing image gallery scroller web app.
+A simple dynamically resizing image/video gallery scroller web app.

@@ -2,68 +2,43 @@ import { useEffect, useState, useMemo } from 'react';
 import { shuffle, fill } from 'lodash';
 import useBreakpoint from 'use-breakpoint';
 
-import { ReactComponent as ArrowDownIcon } from '../styles/icons/arrow-down.svg';
-import { ReactComponent as CloseIcon } from '../styles/icons/close.svg';
-import { ReactComponent as LaunchIcon } from '../styles/icons/launch.svg';
+import { importAllFiles, isImage, isVideo } from 'src/utils';
+import { ReactComponent as ArrowDownIcon } from 'src/styles/icons/arrow-down.svg';
+import { ReactComponent as CloseIcon } from 'src/styles/icons/close.svg';
+import { ReactComponent as LaunchIcon } from 'src/styles/icons/launch.svg';
 import styles from './App.module.scss';
 
-// map imported require.context files to key-value map of file name and webpack file path
-export function importAllFiles(r: __WebpackModuleApi.RequireContext) {
-  return r.keys().reduce((acc, val) => ({ ...acc, [val.replace('./', '')]: r(val).default }), {});
-}
-
-// import gallery of images directly from project; TODO: enable user to select folder from UI
-const importedImages: Record<string, string> = importAllFiles(
-  require.context('../img', false, /\.(gif|png|jpe?g|svg)$/i)
+// import gallery of media directly from project; TODO: enable user to select folder from UI
+const importedMedia: Record<string, string> = importAllFiles(
+  require.context('../img', false, /\.(gif|png|jpe?g|svg|mp4)$/i)
 );
 
 const BREAKPOINTS = { sm: 0, md: 600, lg: 1280, xl: 1920 };
+const BREAKPOINT_COLUMNS = { sm: 1, md: 2, lg: 3, xl: 4 };
 
 const App = () => {
   const { breakpoint } = useBreakpoint(BREAKPOINTS, 'lg');
-  const [images, setImages] = useState<Array<string>>([]);
+  const [mediaSrcs, setMediaSrcs] = useState<Array<string>>([]);
   const [isScroll, setIsScroll] = useState(false);
   const [wasScroll, setWasScroll] = useState(false);
-  const [openImage, setOpenImage] = useState<string | null>(null);
+  const [activeOverlayMedia, setActiveOverlayMedia] = useState<string | null>(null);
 
-  useEffect(() => importedImages && setImages(shuffle(importedImages)), []);
+  useEffect(() => importedMedia && setMediaSrcs(shuffle(importedMedia)), []);
 
   // setup columns for UI; TODO: consider memoizing different breakpoints to prevent re-calc on repeated resize adjustment
   const columns = useMemo(() => {
-    const columnCount = (() => {
-      switch (breakpoint) {
-        case 'xl':
-          return 4;
-        case 'lg':
-          return 3;
-        case 'md':
-          return 2;
-        case 'sm':
-        default:
-          return 1;
-      }
-    })();
-
+    const columnCount = BREAKPOINT_COLUMNS[breakpoint] ?? 1;
     const columns = fill(Array(columnCount), []);
 
-    if (images) {
-      return columns.map((_, i) =>
-        images
-          .map((_, j: number) => {
-            const splitIndex = j * columnCount + i;
-
-            if (images[splitIndex]) {
-              return images[splitIndex];
-            } else {
-              return null;
-            }
-          })
-          .filter((image) => !!image)
-      );
-    } else {
-      return columns;
-    }
-  }, [images, breakpoint]);
+    return columns.map((_, i) =>
+      mediaSrcs
+        .map((_, j: number) => {
+          const splitIndex = j * columnCount + i;
+          return mediaSrcs[splitIndex];
+        })
+        .filter((media) => !!media)
+    );
+  }, [mediaSrcs, breakpoint]);
 
   // handle autoscroll; TODO: add more speed variations
   useEffect(() => {
@@ -87,52 +62,72 @@ const App = () => {
       setIsScroll(true);
     }
 
-    setOpenImage(null);
+    setActiveOverlayMedia(null);
   };
 
   return (
     <div id="app" className={styles.app}>
       <div className={styles.appWrapper}>
-        {columns.length > 0 &&
-          columns.map((column, i) => (
-            <div key={i} className={styles.column}>
-              {column.map((image) => (
-                <div key={image} className={styles.imageWrapper}>
-                  {image && (
-                    <button
-                      className={styles.imageBtn}
-                      onClick={() => {
-                        if (isScroll) {
-                          setWasScroll(true);
-                          setIsScroll(false);
-                        }
+        {columns.map((column, i) => (
+          <div key={i} className={styles.column}>
+            {column.map((mediaSrc) => (
+              <div key={mediaSrc} className={styles.mediaWrapper}>
+                {mediaSrc && (
+                  <button
+                    className={styles.mediaBtn}
+                    onClick={() => {
+                      if (isScroll) {
+                        setWasScroll(true);
+                        setIsScroll(false);
+                      }
 
-                        setOpenImage(image);
-                      }}
-                    >
-                      <img alt={image} src={image} className={styles.image} />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          ))}
+                      setActiveOverlayMedia(mediaSrc);
+                    }}
+                  >
+                    {isImage(mediaSrc) && <img alt={mediaSrc} src={mediaSrc} className={styles.media} />}
+
+                    {isVideo(mediaSrc) && (
+                      <video className={styles.media} preload="metadata" autoPlay muted loop>
+                        <source src={mediaSrc} type="video/mp4" />
+                      </video>
+                    )}
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
 
       <button type="button" className={styles.scroll} onClick={() => setIsScroll(!isScroll)}>
         {isScroll ? <CloseIcon /> : <ArrowDownIcon />}
       </button>
 
-      {openImage && (
+      {activeOverlayMedia && (
         <div className={styles.overlay} onClick={closeOverlay}>
-          <div className={styles.imageWrapper}>
-            <img
-              key={openImage}
-              alt={openImage}
-              src={openImage}
-              className={styles.image}
-              onClick={(e) => e.stopPropagation()}
-            />
+          <div className={styles.mediaWrapper}>
+            {isImage(activeOverlayMedia) && (
+              <img
+                alt={activeOverlayMedia}
+                src={activeOverlayMedia}
+                className={styles.media}
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
+
+            {isVideo(activeOverlayMedia) && (
+              <video
+                className={styles.media}
+                onClick={(e) => e.stopPropagation()}
+                preload="metadata"
+                autoPlay
+                muted
+                loop
+                controls
+              >
+                <source src={activeOverlayMedia} type="video/mp4" />
+              </video>
+            )}
 
             <button className={styles.closeBtn} onClick={closeOverlay}>
               <CloseIcon />
@@ -142,7 +137,7 @@ const App = () => {
               className={styles.openNewTabBtn}
               onClick={(e) => {
                 e.stopPropagation();
-                window.open(openImage, '_blank');
+                window.open(activeOverlayMedia, '_blank');
               }}
             >
               <LaunchIcon />
