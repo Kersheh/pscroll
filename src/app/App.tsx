@@ -8,6 +8,7 @@ import { ReactComponent as CloseIcon } from 'src/styles/icons/close.svg';
 import MediaContainer from 'src/components/MediaContainer/MediaContainer';
 import styles from './App.module.scss';
 import MediaOverlayContainer from 'src/components/MediaOverlayContainer/MediaOverlayContainer';
+import { useCallback } from 'react';
 
 // import gallery of media directly from project; TODO: enable user to select folder from UI
 const importedMedia: Record<string, string> = importAllFiles(
@@ -24,6 +25,7 @@ const App = () => {
   const [wasScroll, setWasScroll] = useState(false);
   const [activeOverlayMediaSrc, setActiveOverlayMediaSrc] = useState<string | null>(null);
 
+  // set media srcs from imported media and randomize order
   useEffect(() => importedMedia && setMediaSrcs(shuffle(importedMedia)), []);
 
   // setup columns for UI; TODO: consider memoizing different breakpoints to prevent re-calc on repeated resize adjustment
@@ -55,6 +57,22 @@ const App = () => {
       };
     }
   }, [isScroll]);
+
+  // set media to next/previous overlay option
+  const changeOverlayMedia = useCallback(
+    (direction: 'left' | 'right') => {
+      const activeIndex = mediaSrcs.findIndex((src) => src === activeOverlayMediaSrc);
+
+      if (direction === 'left' && activeIndex > 0) {
+        setActiveOverlayMediaSrc(mediaSrcs[activeIndex - 1]);
+      }
+
+      if (direction === 'right' && activeIndex < mediaSrcs.length - 1) {
+        setActiveOverlayMediaSrc(mediaSrcs[activeIndex + 1]);
+      }
+    },
+    [activeOverlayMediaSrc]
+  );
 
   return (
     <div id="app" className={styles.app}>
@@ -90,11 +108,13 @@ const App = () => {
 
       {activeOverlayMediaSrc && (
         <MediaOverlayContainer
+          key={activeOverlayMediaSrc}
           src={activeOverlayMediaSrc}
           wasScroll={wasScroll}
           setWasScroll={setWasScroll}
           setIsScroll={setIsScroll}
           setActiveOverlayMediaSrc={setActiveOverlayMediaSrc}
+          setMedia={changeOverlayMedia}
         />
       )}
     </div>

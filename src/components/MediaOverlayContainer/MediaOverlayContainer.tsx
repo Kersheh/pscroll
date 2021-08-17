@@ -1,4 +1,4 @@
-import { useState, Dispatch, SetStateAction } from 'react';
+import { useState, useRef, useEffect, Dispatch, SetStateAction, KeyboardEvent } from 'react';
 
 import { isImage, isVideo } from 'src/utils';
 import Spinner from 'src/components/Spinner/Spinner';
@@ -12,15 +12,18 @@ interface MediaContainerProps {
   setWasScroll: Dispatch<SetStateAction<boolean>>;
   setIsScroll: Dispatch<SetStateAction<boolean>>;
   setActiveOverlayMediaSrc: Dispatch<SetStateAction<string | null>>;
+  setMedia: (media: 'left' | 'right') => void;
 }
 const MediaContainer = ({
   src,
   wasScroll,
   setWasScroll,
   setIsScroll,
-  setActiveOverlayMediaSrc
+  setActiveOverlayMediaSrc,
+  setMedia
 }: MediaContainerProps) => {
   const [loading, setLoading] = useState(true);
+  const overlayRef = useRef<HTMLDivElement>(null);
 
   // handle close overlay and re-enable scroll if previously scrolling
   const closeOverlay = () => {
@@ -32,8 +35,36 @@ const MediaContainer = ({
     setActiveOverlayMediaSrc(null);
   };
 
+  // attach keyboard controls to overlay
+  useEffect(() => {
+    const ref = overlayRef.current;
+    if (ref) {
+      const onKeyDownHandler = (e: KeyboardEvent) => {
+        switch (e.code) {
+          case 'ArrowLeft':
+            setMedia('left');
+            break;
+          case 'ArrowRight':
+            setMedia('right');
+            break;
+          case 'Escape':
+            closeOverlay();
+            break;
+        }
+      };
+
+      // @ts-ignore
+      window.addEventListener('keydown', onKeyDownHandler);
+
+      return () => {
+        // @ts-ignore
+        window.removeEventListener('keydown', onKeyDownHandler);
+      };
+    }
+  }, [overlayRef]);
+
   return (
-    <div className={styles.mediaOverlayContainer} onClick={closeOverlay}>
+    <div className={styles.mediaOverlayContainer} onClick={closeOverlay} ref={overlayRef}>
       <div className={styles.mediaWrapper}>
         {isImage(src) && (
           <img
