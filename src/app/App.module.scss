@@ -1,4 +1,4 @@
-@import 'src/styles/colors';
+@import 'src/styles/partials/colors';
 
 @mixin action-btn {
   position: absolute;
@@ -43,21 +43,6 @@
     }
 
     .media {
-      box-sizing: border-box;
-      max-width: calc(100vw / 4);
-
-      @media only screen and (max-width: 1920px) {
-        max-width: calc(100vw / 3);
-      }
-
-      @media only screen and (max-width: 1280px) {
-        max-width: calc(100vw / 2);
-      }
-
-      @media only screen and (max-width: 600px) {
-        max-width: calc(100vw / 1);
-      }
-
       &Wrapper {
         display: flex;
         justify-content: center;

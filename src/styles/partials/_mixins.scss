@@ -1,0 +1,15 @@
+@mixin action-btn {
+  position: absolute;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  svg {
+    width: 80%;
+    height: 80%;
+    fill: rgba($black, 0.9);
+  }
+}

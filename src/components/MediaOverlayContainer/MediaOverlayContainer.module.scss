@@ -1,0 +1,46 @@
+@import 'src/styles/partials/colors';
+@import 'src/styles/partials/mixins';
+
+@mixin overlay-btn {
+  height: 2rem;
+  width: 2rem;
+  background-color: rgba($white, 0.5);
+}
+
+.mediaOverlayContainer {
+  overflow-y: hidden;
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  background-color: rgba($white, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+
+  .mediaWrapper {
+    position: relative;
+  }
+
+  .media {
+    max-width: 100vw;
+    max-height: 100vh;
+    position: relative;
+  }
+
+  .closeBtn {
+    @include action-btn;
+    @include overlay-btn;
+    top: 1rem;
+    right: 1rem;
+  }
+
+  .openNewTabBtn {
+    @include action-btn;
+    @include overlay-btn;
+    bottom: 1rem;
+    right: 1rem;
+  }
+}

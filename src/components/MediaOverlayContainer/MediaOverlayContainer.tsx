@@ -1,0 +1,89 @@
+import { useState, Dispatch, SetStateAction } from 'react';
+
+import { isImage, isVideo } from 'src/utils';
+import Spinner from 'src/components/Spinner/Spinner';
+import { ReactComponent as CloseIcon } from 'src/styles/icons/close.svg';
+import { ReactComponent as LaunchIcon } from 'src/styles/icons/launch.svg';
+import styles from './MediaOverlayContainer.module.scss';
+
+interface MediaContainerProps {
+  src: string;
+  wasScroll: boolean;
+  setWasScroll: Dispatch<SetStateAction<boolean>>;
+  setIsScroll: Dispatch<SetStateAction<boolean>>;
+  setActiveOverlayMediaSrc: Dispatch<SetStateAction<string | null>>;
+}
+const MediaContainer = ({
+  src,
+  wasScroll,
+  setWasScroll,
+  setIsScroll,
+  setActiveOverlayMediaSrc
+}: MediaContainerProps) => {
+  const [loading, setLoading] = useState(true);
+
+  // handle close overlay and re-enable scroll if previously scrolling
+  const closeOverlay = () => {
+    if (wasScroll) {
+      setWasScroll(false);
+      setIsScroll(true);
+    }
+
+    setActiveOverlayMediaSrc(null);
+  };
+
+  return (
+    <div className={styles.mediaOverlayContainer} onClick={closeOverlay}>
+      <div className={styles.mediaWrapper}>
+        {isImage(src) && (
+          <img
+            style={loading ? { display: 'none' } : {}}
+            onLoad={() => setLoading(false)}
+            alt={src}
+            src={src}
+            className={styles.media}
+            onClick={(e) => e.stopPropagation()}
+          />
+        )}
+
+        {isVideo(src) && (
+          <video
+            className={styles.media}
+            style={loading ? { display: 'none' } : {}}
+            onLoadedData={() => setLoading(false)}
+            onClick={(e) => e.stopPropagation()}
+            preload="metadata"
+            autoPlay
+            muted
+            loop
+            controls
+          >
+            <source src={src} type="video/mp4" />
+          </video>
+        )}
+
+        {loading && <Spinner />}
+
+        {!loading && (
+          <>
+            <button className={styles.closeBtn} onClick={closeOverlay}>
+              <CloseIcon />
+            </button>
+
+            <button
+              className={styles.openNewTabBtn}
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open(src, '_blank');
+              }}
+            >
+              <LaunchIcon />
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default MediaContainer;

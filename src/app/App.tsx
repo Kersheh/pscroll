@@ -2,11 +2,12 @@ import { useEffect, useState, useMemo } from 'react';
 import { shuffle, fill } from 'lodash';
 import useBreakpoint from 'use-breakpoint';
 
-import { importAllFiles, isImage, isVideo } from 'src/utils';
+import { importAllFiles } from 'src/utils';
 import { ReactComponent as ArrowDownIcon } from 'src/styles/icons/arrow-down.svg';
 import { ReactComponent as CloseIcon } from 'src/styles/icons/close.svg';
-import { ReactComponent as LaunchIcon } from 'src/styles/icons/launch.svg';
+import MediaContainer from 'src/components/MediaContainer/MediaContainer';
 import styles from './App.module.scss';
+import MediaOverlayContainer from 'src/components/MediaOverlayContainer/MediaOverlayContainer';
 
 // import gallery of media directly from project; TODO: enable user to select folder from UI
 const importedMedia: Record<string, string> = importAllFiles(
@@ -21,7 +22,7 @@ const App = () => {
   const [mediaSrcs, setMediaSrcs] = useState<Array<string>>([]);
   const [isScroll, setIsScroll] = useState(false);
   const [wasScroll, setWasScroll] = useState(false);
-  const [activeOverlayMedia, setActiveOverlayMedia] = useState<string | null>(null);
+  const [activeOverlayMediaSrc, setActiveOverlayMediaSrc] = useState<string | null>(null);
 
   useEffect(() => importedMedia && setMediaSrcs(shuffle(importedMedia)), []);
 
@@ -55,16 +56,6 @@ const App = () => {
     }
   }, [isScroll]);
 
-  // handle close overlay and re-enable scroll if previously scrolling
-  const closeOverlay = () => {
-    if (wasScroll) {
-      setWasScroll(false);
-      setIsScroll(true);
-    }
-
-    setActiveOverlayMedia(null);
-  };
-
   return (
     <div id="app" className={styles.app}>
       <div className={styles.appWrapper}>
@@ -81,16 +72,10 @@ const App = () => {
                         setIsScroll(false);
                       }
 
-                      setActiveOverlayMedia(mediaSrc);
+                      setActiveOverlayMediaSrc(mediaSrc);
                     }}
                   >
-                    {isImage(mediaSrc) && <img alt={mediaSrc} src={mediaSrc} className={styles.media} />}
-
-                    {isVideo(mediaSrc) && (
-                      <video className={styles.media} preload="metadata" autoPlay muted loop>
-                        <source src={mediaSrc} type="video/mp4" />
-                      </video>
-                    )}
+                    <MediaContainer src={mediaSrc} />
                   </button>
                 )}
               </div>
@@ -103,47 +88,14 @@ const App = () => {
         {isScroll ? <CloseIcon /> : <ArrowDownIcon />}
       </button>
 
-      {activeOverlayMedia && (
-        <div className={styles.overlay} onClick={closeOverlay}>
-          <div className={styles.mediaWrapper}>
-            {isImage(activeOverlayMedia) && (
-              <img
-                alt={activeOverlayMedia}
-                src={activeOverlayMedia}
-                className={styles.media}
-                onClick={(e) => e.stopPropagation()}
-              />
-            )}
-
-            {isVideo(activeOverlayMedia) && (
-              <video
-                className={styles.media}
-                onClick={(e) => e.stopPropagation()}
-                preload="metadata"
-                autoPlay
-                muted
-                loop
-                controls
-              >
-                <source src={activeOverlayMedia} type="video/mp4" />
-              </video>
-            )}
-
-            <button className={styles.closeBtn} onClick={closeOverlay}>
-              <CloseIcon />
-            </button>
-
-            <button
-              className={styles.openNewTabBtn}
-              onClick={(e) => {
-                e.stopPropagation();
-                window.open(activeOverlayMedia, '_blank');
-              }}
-            >
-              <LaunchIcon />
-            </button>
-          </div>
-        </div>
+      {activeOverlayMediaSrc && (
+        <MediaOverlayContainer
+          src={activeOverlayMediaSrc}
+          wasScroll={wasScroll}
+          setWasScroll={setWasScroll}
+          setIsScroll={setIsScroll}
+          setActiveOverlayMediaSrc={setActiveOverlayMediaSrc}
+        />
       )}
     </div>
   );
