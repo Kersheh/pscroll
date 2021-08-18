@@ -1,0 +1,50 @@
+@import 'src/styles/partials/mixins';
+
+.autoScrollMenu {
+  position: absolute;
+  bottom: 4rem;
+  left: 1rem;
+
+  .scrollBtn,
+  .scrollSpeed {
+    @include action-btn;
+    box-shadow: 0 0 10px rgba($black, 0.7);
+  }
+
+  .scrollBtn {
+    height: 3rem;
+    width: 3rem;
+  }
+
+  .scrollSpeed {
+    height: 202px;
+    width: 3rem;
+    bottom: 4.4rem;
+    left: 1rem;
+    transition: height 200ms ease-in;
+    cursor: default;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 3rem;
+    overflow: hidden;
+  
+    button {
+      cursor: pointer;
+      background-color: transparent;
+      border: 0;
+      color: $white;
+      text-transform: uppercase;
+      padding: 0.7rem;
+  
+      &.active {
+        font-weight: 700;
+      }
+    }
+  
+    &Collapsed {
+      height: 0;
+    }
+  }
+}

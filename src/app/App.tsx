@@ -1,14 +1,13 @@
-import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { shuffle, fill } from 'lodash';
 import useBreakpoint from 'use-breakpoint';
 
 import { importAllFiles } from 'src/utils';
-import { BREAKPOINTS, BREAKPOINT_COLUMNS, SCROLL_SPEEDS } from 'src/utils/constants';
-import IconArrowDown from 'src/components/icons/IconArrowDown';
-import IconClose from 'src/components/icons/IconClose';
+import { BREAKPOINTS, BREAKPOINT_COLUMNS } from 'src/utils/constants';
 import MediaContainer from 'src/components/MediaContainer/MediaContainer';
 import styles from './App.module.scss';
 import MediaOverlayContainer from 'src/components/MediaOverlayContainer/MediaOverlayContainer';
+import AutoScrollMenu from 'src/components/AutoScrollMenu/AutoScrollMenu';
 
 // import gallery of media directly from project; TODO: enable user to select folder from UI
 const importedMedia: Record<string, string> = importAllFiles(
@@ -22,10 +21,7 @@ const App = () => {
   const [isScroll, setIsScroll] = useState(false);
   const [wasScroll, setWasScroll] = useState(false);
   const [activeOverlayMediaSrc, setActiveOverlayMediaSrc] = useState<string | null>(null);
-  const [scrollSpeed, setScrollSpeed] = useState(SCROLL_SPEEDS.m);
-  const [showScrollSpeed, setShowScrollSpeed] = useState(false);
   const [currentLoadThreshold, setCurrentLoadThreshold] = useState(LOAD_MORE_THRESHOLD);
-  const scrollMenuRef = useRef<HTMLDivElement>(null);
 
   // set media srcs from imported media and randomize order
   useEffect(() => importedMedia && setMediaSrcs(shuffle(importedMedia)), []);
@@ -54,19 +50,6 @@ const App = () => {
     );
   }, [mediaSrcs, breakpoint, currentLoadThreshold]);
 
-  // handle autoscroll based on active scroll speed when enabled
-  useEffect(() => {
-    if (isScroll) {
-      const interval = setInterval(() => {
-        window.scrollBy({ top: scrollSpeed.px, behavior: 'smooth' });
-      }, scrollSpeed.t);
-
-      return () => {
-        clearInterval(interval);
-      };
-    }
-  }, [isScroll, scrollSpeed]);
-
   // set media to next/previous overlay option
   const changeOverlayMedia = useCallback(
     (direction: 'left' | 'right') => {
@@ -82,25 +65,6 @@ const App = () => {
     },
     [activeOverlayMediaSrc]
   );
-
-  // handle mouseover to display scroll speed menu
-  useEffect(() => {
-    const ref = scrollMenuRef.current;
-    if (isScroll && ref) {
-      const mouseOverHandler = () => setShowScrollSpeed(true);
-      const mouseOutHandler = () => setShowScrollSpeed(false);
-
-      ref.addEventListener('mouseover', mouseOverHandler);
-      ref.addEventListener('mouseout', mouseOutHandler);
-
-      return () => {
-        ref.removeEventListener('mouseover', mouseOverHandler);
-        ref.removeEventListener('mouseout', mouseOutHandler);
-      };
-    } else {
-      setShowScrollSpeed(false);
-    }
-  }, [isScroll]);
 
   // disable overflow scroll on body when overlay is open
   useEffect(() => {
@@ -159,49 +123,7 @@ const App = () => {
         ))}
       </div>
 
-      <div ref={scrollMenuRef}>
-        <button type="button" className={styles.scrollBtn} onClick={() => setIsScroll(!isScroll)}>
-          {isScroll ? <IconClose /> : <IconArrowDown />}
-        </button>
-
-        <div className={`${styles.scrollSpeed} ${!isScroll && !showScrollSpeed ? styles.scrollSpeedCollapsed : ''}`}>
-          <button
-            type="button"
-            className={scrollSpeed.px === SCROLL_SPEEDS.vs.px ? styles.active : ''}
-            onClick={() => setScrollSpeed(SCROLL_SPEEDS.vs)}
-          >
-            vs
-          </button>
-          <button
-            type="button"
-            className={scrollSpeed.px === SCROLL_SPEEDS.s.px ? styles.active : ''}
-            onClick={() => setScrollSpeed(SCROLL_SPEEDS.s)}
-          >
-            s
-          </button>
-          <button
-            type="button"
-            className={scrollSpeed.px === SCROLL_SPEEDS.m.px ? styles.active : ''}
-            onClick={() => setScrollSpeed(SCROLL_SPEEDS.m)}
-          >
-            m
-          </button>
-          <button
-            type="button"
-            className={scrollSpeed.px === SCROLL_SPEEDS.f.px ? styles.active : ''}
-            onClick={() => setScrollSpeed(SCROLL_SPEEDS.f)}
-          >
-            f
-          </button>
-          <button
-            type="button"
-            className={scrollSpeed.px === SCROLL_SPEEDS.vf.px ? styles.active : ''}
-            onClick={() => setScrollSpeed(SCROLL_SPEEDS.vf)}
-          >
-            vf
-          </button>
-        </div>
-      </div>
+      <AutoScrollMenu isScroll={isScroll} setIsScroll={setIsScroll} />
 
       {activeOverlayMediaSrc && (
         <MediaOverlayContainer
