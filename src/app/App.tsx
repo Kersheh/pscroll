@@ -16,6 +16,7 @@ const importedMedia: Record<string, string> = importAllFiles(
 );
 
 const App = () => {
+  const LOAD_MORE_THRESHOLD = 10;
   const { breakpoint } = useBreakpoint(BREAKPOINTS, 'lg');
   const [mediaSrcs, setMediaSrcs] = useState<Array<string>>([]);
   const [isScroll, setIsScroll] = useState(false);
@@ -23,25 +24,27 @@ const App = () => {
   const [activeOverlayMediaSrc, setActiveOverlayMediaSrc] = useState<string | null>(null);
   const [scrollSpeed, setScrollSpeed] = useState(SCROLL_SPEEDS.m);
   const [showScrollSpeed, setShowScrollSpeed] = useState(false);
+  const [currentLoadThreshold, setCurrentLoadThreshold] = useState(LOAD_MORE_THRESHOLD);
   const scrollMenuRef = useRef<HTMLDivElement>(null);
 
   // set media srcs from imported media and randomize order
   useEffect(() => importedMedia && setMediaSrcs(shuffle(importedMedia)), []);
 
-  // setup columns for UI; TODO: consider memoizing different breakpoints to prevent re-calc on repeated resize adjustment
+  // setup columns for UI
   const columns = useMemo(() => {
     const columnCount = BREAKPOINT_COLUMNS[breakpoint] ?? 1;
     const columns = fill(Array(columnCount), []);
 
     return columns.map((_, i) =>
       mediaSrcs
+        .slice(0, currentLoadThreshold)
         .map((_, j: number) => {
           const splitIndex = j * columnCount + i;
           return mediaSrcs[splitIndex];
         })
         .filter((media) => !!media)
     );
-  }, [mediaSrcs, breakpoint]);
+  }, [mediaSrcs, breakpoint, currentLoadThreshold]);
 
   // handle autoscroll based on active scroll speed when enabled
   useEffect(() => {
@@ -91,15 +94,34 @@ const App = () => {
     }
   }, [isScroll]);
 
+  // disable overflow scroll on body when overlay is open
   useEffect(() => {
+    const bodyElement = document.getElementsByTagName('body')[0];
+
     if (activeOverlayMediaSrc) {
       // @ts-ignore
-      document.getElementsByTagName('body')[0].style = 'overflow: hidden';
+      bodyElement.style = 'overflow: hidden';
     } else {
       // @ts-ignore
-      document.getElementsByTagName('body')[0].style = '';
+      bodyElement.style = '';
     }
   }, [activeOverlayMediaSrc]);
+
+  // dynamically increases total media load threshold per column at bottom of page
+  const onScrollHandler = useCallback(() => {
+    if (window.innerHeight + window.scrollY >= document.body.scrollHeight) {
+      setCurrentLoadThreshold(currentLoadThreshold + LOAD_MORE_THRESHOLD);
+    }
+  }, [currentLoadThreshold]);
+
+  // attaches threshold increase handler to document scroll
+  useEffect(() => {
+    document.addEventListener('scroll', onScrollHandler);
+
+    return () => {
+      document.removeEventListener('scroll', onScrollHandler);
+    };
+  }, [onScrollHandler]);
 
   return (
     <>
