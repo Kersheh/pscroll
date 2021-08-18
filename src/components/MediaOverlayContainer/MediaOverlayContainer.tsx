@@ -90,6 +90,7 @@ const MediaContainer = ({
             muted
             loop
             controls
+            playsInline
           >
             <source src={src} type="video/mp4" />
           </video>

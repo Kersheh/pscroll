@@ -31,6 +31,7 @@ const MediaContainer = ({ src }: MediaContainerProps) => {
           autoPlay
           muted
           loop
+          playsInline
         >
           <source src={src} type="video/mp4" />
         </video>
