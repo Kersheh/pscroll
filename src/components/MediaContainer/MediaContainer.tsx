@@ -19,6 +19,7 @@ const MediaContainer = ({ src }: MediaContainerProps) => {
           alt={src}
           src={src}
           className={styles.media}
+          data-testid="img"
         />
       )}
 
@@ -32,6 +33,7 @@ const MediaContainer = ({ src }: MediaContainerProps) => {
           muted
           loop
           playsInline
+          data-testid="video"
         >
           <source src={src} type="video/mp4" />
         </video>

@@ -30,6 +30,14 @@ const App = () => {
   // set media srcs from imported media and randomize order
   useEffect(() => importedMedia && setMediaSrcs(shuffle(importedMedia)), []);
 
+  // scroll to top on pageload in event client refreshes browser
+  useEffect(() => {
+    const handleUnload = () => window.scrollTo(0, 0);
+    window.addEventListener('beforeunload', handleUnload);
+
+    return () => window.removeEventListener('beforeunload', handleUnload);
+  }, []);
+
   // setup columns for UI
   const columns = useMemo(() => {
     const columnCount = BREAKPOINT_COLUMNS[breakpoint] ?? 1;

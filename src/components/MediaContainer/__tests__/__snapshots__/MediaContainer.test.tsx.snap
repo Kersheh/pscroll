@@ -1,0 +1,40 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<MediaContainer /> should render image 1`] = `
+<div>
+  <div
+    class="mediaContainer"
+  >
+    <img
+      alt="example.png"
+      class="media"
+      data-testid="img"
+      src="example.png"
+      style=""
+    />
+  </div>
+</div>
+`;
+
+exports[`<MediaContainer /> should render video 1`] = `
+<div>
+  <div
+    class="mediaContainer"
+  >
+    <video
+      autoplay=""
+      class="media"
+      data-testid="video"
+      loop=""
+      playsinline=""
+      preload="metadata"
+      style=""
+    >
+      <source
+        src="example.mp4"
+        type="video/mp4"
+      />
+    </video>
+  </div>
+</div>
+`;

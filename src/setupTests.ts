@@ -1,12 +1,14 @@
 import '@testing-library/jest-dom';
 
-beforeEach(() => {
-  // @ts-ignore
-  window.matchMedia = window.matchMedia
-    ? window.matchMedia
-    : () => ({
-        matches: false,
-        addListener: jest.fn(),
-        removeListener: jest.fn()
-      });
+// @ts-ignore
+window.matchMedia = window.matchMedia
+  ? window.matchMedia
+  : () => ({
+      matches: false,
+      addListener: jest.fn(),
+      removeListener: jest.fn()
+    });
+
+Object.defineProperty(HTMLMediaElement.prototype, 'muted', {
+  set: () => null
 });
