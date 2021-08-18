@@ -4,8 +4,8 @@ import useBreakpoint from 'use-breakpoint';
 
 import { importAllFiles } from 'src/utils';
 import { BREAKPOINTS, BREAKPOINT_COLUMNS, SCROLL_SPEEDS } from 'src/utils/constants';
-import { ReactComponent as ArrowDownIcon } from 'src/styles/icons/arrow-down.svg';
-import { ReactComponent as CloseIcon } from 'src/styles/icons/close.svg';
+import IconArrowDown from 'src/components/icons/IconArrowDown';
+import IconClose from 'src/components/icons/IconClose';
 import MediaContainer from 'src/components/MediaContainer/MediaContainer';
 import styles from './App.module.scss';
 import MediaOverlayContainer from 'src/components/MediaOverlayContainer/MediaOverlayContainer';
@@ -45,11 +45,9 @@ const App = () => {
 
   // handle autoscroll based on active scroll speed when enabled
   useEffect(() => {
-    const appRef = document.getElementById('app');
-
-    if (isScroll && appRef) {
+    if (isScroll) {
       const interval = setInterval(() => {
-        appRef.scrollBy({ top: scrollSpeed.px, behavior: 'smooth' });
+        window.scrollBy({ top: scrollSpeed.px, behavior: 'smooth' });
       }, scrollSpeed.t);
 
       return () => {
@@ -93,9 +91,19 @@ const App = () => {
     }
   }, [isScroll]);
 
+  useEffect(() => {
+    if (activeOverlayMediaSrc) {
+      // @ts-ignore
+      document.getElementsByTagName('body')[0].style = 'overflow: hidden';
+    } else {
+      // @ts-ignore
+      document.getElementsByTagName('body')[0].style = '';
+    }
+  }, [activeOverlayMediaSrc]);
+
   return (
-    <div id="app" className={styles.app}>
-      <div className={styles.appWrapper}>
+    <>
+      <div className={styles.appContent}>
         {columns.map((column, i) => (
           <div key={i} className={styles.column}>
             {column.map((mediaSrc) => (
@@ -123,7 +131,7 @@ const App = () => {
 
       <div ref={scrollMenuRef}>
         <button type="button" className={styles.scrollBtn} onClick={() => setIsScroll(!isScroll)}>
-          {isScroll ? <CloseIcon /> : <ArrowDownIcon />}
+          {isScroll ? <IconClose /> : <IconArrowDown />}
         </button>
 
         <div className={`${styles.scrollSpeed} ${!isScroll && !showScrollSpeed ? styles.scrollSpeedCollapsed : ''}`}>
@@ -176,7 +184,7 @@ const App = () => {
           setMedia={changeOverlayMedia}
         />
       )}
-    </div>
+    </>
   );
 };
 

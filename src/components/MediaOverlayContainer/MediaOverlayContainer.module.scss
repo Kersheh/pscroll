@@ -4,12 +4,17 @@
 @mixin overlay-btn {
   height: 2rem;
   width: 2rem;
-  background-color: rgba($white, 0.5);
+  box-shadow: 0 0 10px rgba($black, 0.4);
+
+  @media only screen and (max-width: 600px) {
+    height: 46px;
+    width: 46px;
+  }
 }
 
 .mediaOverlayContainer {
   overflow-y: hidden;
-  position: absolute;
+  position: fixed;
   width: 100vw;
   height: 100vh;
   top: 0;
@@ -31,8 +36,9 @@
   }
 
   .closeBtn {
-    @include action-btn;
     @include overlay-btn;
+    @include action-btn;
+    display: flex;
     top: 1rem;
     right: 1rem;
   }

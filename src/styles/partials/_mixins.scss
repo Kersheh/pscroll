@@ -1,15 +1,17 @@
+@import 'src/styles/partials/colors';
+
 @mixin action-btn {
-  position: absolute;
+  position: fixed;
   border: 0;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: $secondary-black;
 
   svg {
-    width: 80%;
-    height: 80%;
-    fill: rgba($black, 0.9);
+    width: 24px;
+    height: 24px;
   }
 }

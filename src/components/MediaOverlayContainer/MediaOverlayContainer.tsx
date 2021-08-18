@@ -2,9 +2,11 @@ import { useState, useRef, useEffect, Dispatch, SetStateAction, KeyboardEvent } 
 
 import { isImage, isVideo } from 'src/utils';
 import Spinner from 'src/components/Spinner/Spinner';
-import { ReactComponent as CloseIcon } from 'src/styles/icons/close.svg';
-import { ReactComponent as LaunchIcon } from 'src/styles/icons/launch.svg';
+import IconLaunch from 'src/components/icons/IconLaunch';
+import IconClose from 'src/components/icons/IconClose';
 import styles from './MediaOverlayContainer.module.scss';
+
+// TODO: Fix overlay button icons not showing on iOS
 
 interface MediaContainerProps {
   src: string;
@@ -98,7 +100,7 @@ const MediaContainer = ({
         {!loading && (
           <>
             <button className={styles.closeBtn} onClick={closeOverlay}>
-              <CloseIcon />
+              <IconClose />
             </button>
 
             <button
@@ -108,7 +110,7 @@ const MediaContainer = ({
                 window.open(src, '_blank');
               }}
             >
-              <LaunchIcon />
+              <IconLaunch />
             </button>
           </>
         )}
