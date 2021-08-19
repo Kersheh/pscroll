@@ -1,6 +1,6 @@
-export const BREAKPOINTS = { sm: 0, md: 600, lg: 1280, xl: 1920 };
+export const BREAKPOINTS = { sm: 0, md: 640, lg: 1280, xl: 1920, xxl: 2560 };
 
-export const BREAKPOINT_COLUMNS = { sm: 1, md: 2, lg: 3, xl: 4 };
+export const BREAKPOINT_COLUMNS = { sm: 1, md: 2, lg: 3, xl: 4, xxl: 5 };
 
 export const SCROLL_SPEEDS = {
   vs: {
