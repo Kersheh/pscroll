@@ -8,3 +8,14 @@ export const isImage = (file: string) => /\.(gif|png|jpe?g|svg)$/i.test(file);
 
 // validate if filename is a supported video type
 export const isVideo = (file: string) => /\.(mp4)$/i.test(file);
+
+// save to local storage
+export const setLocalStorage = (key: string, props = {}) => {
+  localStorage.setItem('default', JSON.stringify({ [key]: props }));
+};
+
+// load from local storage
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const getLocalStorage = (key: string) => {
+  return JSON.parse(localStorage.getItem('default') ?? '{}')[key];
+};

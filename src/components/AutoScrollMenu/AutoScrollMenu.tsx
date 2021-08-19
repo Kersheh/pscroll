@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, Dispatch, SetStateAction, useCallback } fr
 import { map } from 'lodash';
 
 import { SCROLL_SPEEDS } from 'src/utils/constants';
+import { setLocalStorage, getLocalStorage } from 'src/utils';
 import IconArrowDown from 'src/components/icons/IconArrowDown';
 import IconClose from 'src/components/icons/IconClose';
 import IconSlow from 'src/components/icons/IconSlow';
@@ -21,8 +22,13 @@ interface AutoScrollMenuProps {
 }
 const AutoScrollMenu = ({ isScroll, setIsScroll, isOverlayOpen }: AutoScrollMenuProps) => {
   const scrollMenuRef = useRef<HTMLDivElement>(null);
-  const [scrollSpeed, setScrollSpeed] = useState(SCROLL_SPEEDS.m);
+  const [scrollSpeed, setScrollSpeed] = useState(getLocalStorage('scrollSpeed') ?? SCROLL_SPEEDS.m);
   const [showScrollSpeed, setShowScrollSpeed] = useState(false);
+
+  // save set scroll speed to local storage
+  useEffect(() => {
+    setLocalStorage('scrollSpeed', scrollSpeed);
+  }, [scrollSpeed]);
 
   // handle mouseover to display scroll speed menu
   useEffect(() => {
@@ -62,7 +68,7 @@ const AutoScrollMenu = ({ isScroll, setIsScroll, isOverlayOpen }: AutoScrollMenu
   const changeScrollSpeed = useCallback(
     (change: 'faster' | 'slower') => {
       const scrollSpeedsArray = map(SCROLL_SPEEDS, (speed) => speed);
-      const activeIndex = scrollSpeedsArray.findIndex((src) => src === scrollSpeed);
+      const activeIndex = scrollSpeedsArray.findIndex((src) => src.px === scrollSpeed.px);
 
       if (change === 'faster' && activeIndex < Object.keys(SCROLL_SPEEDS).length - 1) {
         setScrollSpeed(scrollSpeedsArray[activeIndex + 1]);
