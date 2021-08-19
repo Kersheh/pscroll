@@ -82,7 +82,8 @@ const App = () => {
 
   // dynamically increases total media load threshold per column at bottom of page
   const onScrollHandler = useCallback(() => {
-    if (window.innerHeight + window.scrollY >= document.body.scrollHeight) {
+    const OFFSET = 240;
+    if (window.innerHeight + window.scrollY + OFFSET >= document.body.scrollHeight) {
       setCurrentLoadThreshold(currentLoadThreshold + LOAD_MORE_THRESHOLD);
     }
   }, [currentLoadThreshold]);

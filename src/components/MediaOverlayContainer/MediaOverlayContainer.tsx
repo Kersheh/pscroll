@@ -6,7 +6,7 @@ import IconLaunch from 'src/components/icons/IconLaunch';
 import IconClose from 'src/components/icons/IconClose';
 import styles from './MediaOverlayContainer.module.scss';
 
-// TODO: Fix overlay button icons not showing on iOS
+// TODO: Prevent refetch of cached image as overlay is a new <img>
 
 interface MediaContainerProps {
   src: string;
