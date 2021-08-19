@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, Dispatch, SetStateAction, KeyboardEvent } from 'react';
+import { useState, useEffect, Dispatch, SetStateAction, KeyboardEvent } from 'react';
 
 import { isImage, isVideo } from 'src/utils';
 import Spinner from 'src/components/Spinner/Spinner';
@@ -25,7 +25,6 @@ const MediaContainer = ({
   setMedia
 }: MediaContainerProps) => {
   const [loading, setLoading] = useState(true);
-  const overlayRef = useRef<HTMLDivElement>(null);
 
   // handle close overlay and re-enable scroll if previously scrolling
   const closeOverlay = () => {
@@ -39,34 +38,31 @@ const MediaContainer = ({
 
   // attach keyboard controls to overlay
   useEffect(() => {
-    const ref = overlayRef.current;
-    if (ref) {
-      const onKeyDownHandler = (e: KeyboardEvent) => {
-        switch (e.code) {
-          case 'ArrowLeft':
-            setMedia('left');
-            break;
-          case 'ArrowRight':
-            setMedia('right');
-            break;
-          case 'Escape':
-            closeOverlay();
-            break;
-        }
-      };
+    const onKeyDownHandler = (e: KeyboardEvent) => {
+      switch (e.code) {
+        case 'ArrowLeft':
+          setMedia('left');
+          break;
+        case 'ArrowRight':
+          setMedia('right');
+          break;
+        case 'Escape':
+          closeOverlay();
+          break;
+      }
+    };
 
+    // @ts-ignore
+    window.addEventListener('keydown', onKeyDownHandler);
+
+    return () => {
       // @ts-ignore
-      window.addEventListener('keydown', onKeyDownHandler);
-
-      return () => {
-        // @ts-ignore
-        window.removeEventListener('keydown', onKeyDownHandler);
-      };
-    }
-  }, [overlayRef]);
+      window.removeEventListener('keydown', onKeyDownHandler);
+    };
+  }, []);
 
   return (
-    <div className={styles.mediaOverlayContainer} onClick={closeOverlay} ref={overlayRef}>
+    <div className={styles.mediaOverlayContainer} onClick={closeOverlay}>
       <div className={styles.mediaWrapper}>
         {isImage(src) && (
           <img
@@ -100,7 +96,7 @@ const MediaContainer = ({
 
         {!loading && (
           <>
-            <button className={styles.closeBtn} onClick={closeOverlay}>
+            <button className={styles.closeBtn} onClick={closeOverlay} tabIndex={1}>
               <IconClose />
             </button>
 
@@ -110,6 +106,7 @@ const MediaContainer = ({
                 e.stopPropagation();
                 window.open(src, '_blank');
               }}
+              tabIndex={2}
             >
               <IconLaunch />
             </button>

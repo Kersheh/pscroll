@@ -23,6 +23,8 @@ const App = () => {
   const [activeOverlayMediaSrc, setActiveOverlayMediaSrc] = useState<string | null>(null);
   const [currentLoadThreshold, setCurrentLoadThreshold] = useState(LOAD_MORE_THRESHOLD);
 
+  const columnCount = BREAKPOINT_COLUMNS[breakpoint] ?? 1;
+
   // set media srcs from imported media and randomize order
   useEffect(() => importedMedia && setMediaSrcs(shuffle(importedMedia)), []);
 
@@ -36,7 +38,6 @@ const App = () => {
 
   // setup columns for UI
   const columns = useMemo(() => {
-    const columnCount = BREAKPOINT_COLUMNS[breakpoint] ?? 1;
     const columns = fill(Array(columnCount), []);
 
     return columns.map((_, i) =>
@@ -48,7 +49,7 @@ const App = () => {
         })
         .filter((media) => !!media)
     );
-  }, [mediaSrcs, breakpoint, currentLoadThreshold]);
+  }, [mediaSrcs, columnCount, currentLoadThreshold]);
 
   // set media to next/previous overlay option
   const changeOverlayMedia = useCallback(
@@ -99,11 +100,12 @@ const App = () => {
     <>
       <div className={styles.appContent}>
         {columns.map((column, i) => (
-          <div key={i} className={styles.column}>
-            {column.map((mediaSrc) => (
+          <div key={`col-${i}`} className={styles.column}>
+            {column.map((mediaSrc, j) => (
               <div key={mediaSrc} className={styles.mediaWrapper}>
                 {mediaSrc && (
                   <button
+                    tabIndex={!activeOverlayMediaSrc ? j * columnCount + i + 2 : -1}
                     className={styles.mediaBtn}
                     onClick={() => {
                       if (isScroll) {
@@ -123,7 +125,7 @@ const App = () => {
         ))}
       </div>
 
-      <AutoScrollMenu isScroll={isScroll} setIsScroll={setIsScroll} />
+      <AutoScrollMenu isScroll={isScroll} setIsScroll={setIsScroll} isOverlayOpen={!!activeOverlayMediaSrc} />
 
       {activeOverlayMediaSrc && (
         <MediaOverlayContainer

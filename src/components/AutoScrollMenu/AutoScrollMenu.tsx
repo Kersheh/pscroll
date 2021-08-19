@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, Dispatch, SetStateAction } from 'react';
+import { useState, useEffect, useRef, Dispatch, SetStateAction, useCallback } from 'react';
 import { map } from 'lodash';
 
 import { SCROLL_SPEEDS } from 'src/utils/constants';
@@ -11,8 +11,9 @@ type ScrollSpeed = keyof typeof SCROLL_SPEEDS;
 interface AutoScrollMenuProps {
   isScroll: boolean;
   setIsScroll: Dispatch<SetStateAction<boolean>>;
+  isOverlayOpen: boolean;
 }
-const AutoScrollMenu = ({ isScroll, setIsScroll }: AutoScrollMenuProps) => {
+const AutoScrollMenu = ({ isScroll, setIsScroll, isOverlayOpen }: AutoScrollMenuProps) => {
   const scrollMenuRef = useRef<HTMLDivElement>(null);
   const [scrollSpeed, setScrollSpeed] = useState(SCROLL_SPEEDS.m);
   const [showScrollSpeed, setShowScrollSpeed] = useState(false);
@@ -20,16 +21,18 @@ const AutoScrollMenu = ({ isScroll, setIsScroll }: AutoScrollMenuProps) => {
   // handle mouseover to display scroll speed menu
   useEffect(() => {
     const ref = scrollMenuRef.current;
-    if (isScroll && ref) {
-      const mouseOverHandler = () => setShowScrollSpeed(true);
-      const mouseOutHandler = () => setShowScrollSpeed(false);
+    setShowScrollSpeed(true);
 
-      ref.addEventListener('mouseover', mouseOverHandler);
-      ref.addEventListener('mouseout', mouseOutHandler);
+    if (isScroll && ref) {
+      const mouseEnterHandler = () => setShowScrollSpeed(true);
+      const mouseLeaveHandler = () => setShowScrollSpeed(false);
+
+      ref.addEventListener('mouseenter', mouseEnterHandler);
+      ref.addEventListener('mouseleave', mouseLeaveHandler);
 
       return () => {
-        ref.removeEventListener('mouseover', mouseOverHandler);
-        ref.removeEventListener('mouseout', mouseOutHandler);
+        ref.removeEventListener('mouseenter', mouseEnterHandler);
+        ref.removeEventListener('mouseleave', mouseLeaveHandler);
       };
     } else {
       setShowScrollSpeed(false);
@@ -49,11 +52,56 @@ const AutoScrollMenu = ({ isScroll, setIsScroll }: AutoScrollMenuProps) => {
     }
   }, [isScroll, scrollSpeed]);
 
+  // increment/decrement scroll speed
+  const changeScrollSpeed = useCallback(
+    (change: 'faster' | 'slower') => {
+      const scrollSpeedsArray = map(SCROLL_SPEEDS, (speed) => speed);
+      const activeIndex = scrollSpeedsArray.findIndex((src) => src === scrollSpeed);
+
+      if (change === 'faster' && activeIndex < Object.keys(SCROLL_SPEEDS).length - 1) {
+        setScrollSpeed(scrollSpeedsArray[activeIndex + 1]);
+      }
+
+      if (change === 'slower' && activeIndex > 0) {
+        setScrollSpeed(scrollSpeedsArray[activeIndex - 1]);
+      }
+    },
+    [scrollSpeed]
+  );
+
+  // handle keyboard shortcut features
+  const onKeyDownHandler = useCallback(
+    (e: KeyboardEvent) => {
+      switch (e.code) {
+        case 'KeyS':
+          setIsScroll(!isScroll);
+          break;
+        case 'KeyD':
+          isScroll && changeScrollSpeed('faster');
+          break;
+        case 'KeyA':
+          isScroll && changeScrollSpeed('slower');
+          break;
+      }
+    },
+    [isScroll, setIsScroll, changeScrollSpeed]
+  );
+
+  // attach keyboard auto scroll menu
+  useEffect(() => {
+    window.addEventListener('keydown', onKeyDownHandler);
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDownHandler);
+    };
+  }, [onKeyDownHandler]);
+
   const ScrollSpeedBtn = ({ speed }: { speed: ScrollSpeed }) => (
     <button
       type="button"
       className={scrollSpeed.px === SCROLL_SPEEDS[speed].px ? styles.active : ''}
       onClick={() => setScrollSpeed(SCROLL_SPEEDS[speed])}
+      tabIndex={isOverlayOpen ? -1 : undefined}
     >
       {speed}
     </button>
@@ -61,11 +109,16 @@ const AutoScrollMenu = ({ isScroll, setIsScroll }: AutoScrollMenuProps) => {
 
   return (
     <div className={styles.autoScrollMenu} ref={scrollMenuRef}>
-      <button type="button" className={styles.scrollBtn} onClick={() => setIsScroll(!isScroll)}>
+      <button
+        type="button"
+        className={styles.scrollBtn}
+        onClick={() => setIsScroll(!isScroll)}
+        tabIndex={isOverlayOpen ? -1 : 1}
+      >
         {isScroll ? <IconClose /> : <IconArrowDown />}
       </button>
 
-      <div className={`${styles.scrollSpeed} ${!isScroll && !showScrollSpeed ? styles.scrollSpeedCollapsed : ''}`}>
+      <div className={`${styles.scrollSpeed} ${!isScroll || !showScrollSpeed ? styles.scrollSpeedCollapsed : ''}`}>
         {map(SCROLL_SPEEDS, (_, key: ScrollSpeed) => (
           <ScrollSpeedBtn key={key} speed={key} />
         ))}

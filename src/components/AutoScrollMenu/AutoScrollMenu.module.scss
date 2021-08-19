@@ -1,10 +1,6 @@
 @import 'src/styles/partials/mixins';
 
 .autoScrollMenu {
-  position: absolute;
-  bottom: 4rem;
-  left: 1rem;
-
   .scrollBtn,
   .scrollSpeed {
     @include action-btn;
@@ -14,6 +10,8 @@
   .scrollBtn {
     height: 3rem;
     width: 3rem;
+    bottom: 1rem;
+    left: 1rem;
   }
 
   .scrollSpeed {
@@ -21,7 +19,7 @@
     width: 3rem;
     bottom: 4.4rem;
     left: 1rem;
-    transition: height 200ms ease-in;
+    transition: height 300ms ease-in-out;
     cursor: default;
     display: flex;
     flex-direction: column;
