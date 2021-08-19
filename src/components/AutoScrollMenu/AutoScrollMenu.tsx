@@ -4,6 +4,12 @@ import { map } from 'lodash';
 import { SCROLL_SPEEDS } from 'src/utils/constants';
 import IconArrowDown from 'src/components/icons/IconArrowDown';
 import IconClose from 'src/components/icons/IconClose';
+import IconSlow from 'src/components/icons/IconSlow';
+import IconSlowFilled from 'src/components/icons/IconSlowFilled';
+import IconFast from 'src/components/icons/IconFast';
+import IconFastFilled from 'src/components/icons/IconFastFilled';
+import IconRadioUnchecked from 'src/components/icons/IconRadioUnchecked';
+import IconRadioChecked from 'src/components/icons/IconRadioChecked';
 import styles from './AutoScrollMenu.module.scss';
 
 type ScrollSpeed = keyof typeof SCROLL_SPEEDS;
@@ -73,6 +79,9 @@ const AutoScrollMenu = ({ isScroll, setIsScroll, isOverlayOpen }: AutoScrollMenu
   const onKeyDownHandler = useCallback(
     (e: KeyboardEvent) => {
       switch (e.code) {
+        case 'Escape':
+          setIsScroll(false);
+          break;
         case 'KeyS':
           setIsScroll(!isScroll);
           break;
@@ -96,16 +105,21 @@ const AutoScrollMenu = ({ isScroll, setIsScroll, isOverlayOpen }: AutoScrollMenu
     };
   }, [onKeyDownHandler]);
 
-  const ScrollSpeedBtn = ({ speed }: { speed: ScrollSpeed }) => (
-    <button
-      type="button"
-      className={scrollSpeed.px === SCROLL_SPEEDS[speed].px ? styles.active : ''}
-      onClick={() => setScrollSpeed(SCROLL_SPEEDS[speed])}
-      tabIndex={isOverlayOpen ? -1 : undefined}
-    >
-      {speed}
-    </button>
-  );
+  const ScrollSpeedBtn = ({ speed }: { speed: ScrollSpeed }) => {
+    const isActive = scrollSpeed.px === SCROLL_SPEEDS[speed].px;
+    return (
+      <button
+        type="button"
+        className={isActive ? styles.active : ''}
+        onClick={() => setScrollSpeed(SCROLL_SPEEDS[speed])}
+        tabIndex={isOverlayOpen ? -1 : undefined}
+      >
+        {speed === 'vs' && (isActive ? <IconSlowFilled /> : <IconSlow />)}
+        {speed === 'vf' && (isActive ? <IconFastFilled /> : <IconFast />)}
+        {speed !== 'vs' && speed !== 'vf' && (isActive ? <IconRadioChecked /> : <IconRadioUnchecked />)}
+      </button>
+    );
+  };
 
   return (
     <div className={styles.autoScrollMenu} ref={scrollMenuRef}>
