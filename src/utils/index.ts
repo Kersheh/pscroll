@@ -15,7 +15,6 @@ export const setLocalStorage = (key: string, props = {}) => {
 };
 
 // load from local storage
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getLocalStorage = (key: string) => {
   return JSON.parse(localStorage.getItem('default') ?? '{}')[key];
 };

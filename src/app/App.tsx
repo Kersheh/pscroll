@@ -11,7 +11,7 @@ import AutoScrollMenu from 'src/components/AutoScrollMenu/AutoScrollMenu';
 
 // import gallery of media directly from project; TODO: enable user to select folder from UI
 const importedMedia: Record<string, string> = importAllFiles(
-  require.context('../img', false, /\.(gif|png|jpe?g|svg|mp4)$/i)
+  require.context('../../media', false, /\.(gif|png|jpe?g|svg|mp4)$/i)
 );
 
 const App = () => {
