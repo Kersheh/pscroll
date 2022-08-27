@@ -12,15 +12,18 @@ import IconFastFilled from 'src/components/icons/IconFastFilled';
 import IconRadioUnchecked from 'src/components/icons/IconRadioUnchecked';
 import IconRadioChecked from 'src/components/icons/IconRadioChecked';
 import styles from './AutoScrollMenu.module.scss';
+import { SelectedActiveMenu } from '../MenuBar/MenuBar';
 
 type ScrollSpeed = keyof typeof SCROLL_SPEEDS;
 
-interface AutoScrollMenuProps {
+export interface AutoScrollMenuProps {
   isScroll: boolean;
   setIsScroll: Dispatch<SetStateAction<boolean>>;
   isOverlayOpen: boolean;
+  activeMenu: SelectedActiveMenu;
+  setActiveMenu: Dispatch<SetStateAction<SelectedActiveMenu>>;
 }
-const AutoScrollMenu = ({ isScroll, setIsScroll, isOverlayOpen }: AutoScrollMenuProps) => {
+const AutoScrollMenu = ({ isScroll, setIsScroll, isOverlayOpen, activeMenu, setActiveMenu }: AutoScrollMenuProps) => {
   const scrollMenuRef = useRef<HTMLDivElement>(null);
   const [scrollSpeed, setScrollSpeed] = useState(getLocalStorage('scrollSpeed') ?? SCROLL_SPEEDS.m);
   const [showScrollSpeed, setShowScrollSpeed] = useState(false);
@@ -29,27 +32,6 @@ const AutoScrollMenu = ({ isScroll, setIsScroll, isOverlayOpen }: AutoScrollMenu
   useEffect(() => {
     setLocalStorage('scrollSpeed', scrollSpeed);
   }, [scrollSpeed]);
-
-  // handle mouseover to display scroll speed menu
-  useEffect(() => {
-    const ref = scrollMenuRef.current;
-    setShowScrollSpeed(true);
-
-    if (isScroll && ref) {
-      const mouseEnterHandler = () => setShowScrollSpeed(true);
-      const mouseLeaveHandler = () => setShowScrollSpeed(false);
-
-      ref.addEventListener('mouseenter', mouseEnterHandler);
-      ref.addEventListener('mouseleave', mouseLeaveHandler);
-
-      return () => {
-        ref.removeEventListener('mouseenter', mouseEnterHandler);
-        ref.removeEventListener('mouseleave', mouseLeaveHandler);
-      };
-    } else {
-      setShowScrollSpeed(false);
-    }
-  }, [isScroll]);
 
   // handle autoscroll based on active scroll speed when enabled
   useEffect(() => {
@@ -111,13 +93,22 @@ const AutoScrollMenu = ({ isScroll, setIsScroll, isOverlayOpen }: AutoScrollMenu
     };
   }, [onKeyDownHandler]);
 
+  useEffect(() => {
+    if (activeMenu !== 'scroll') {
+      setShowScrollSpeed(false);
+    }
+  }, [activeMenu]);
+
   const ScrollSpeedBtn = ({ speed }: { speed: ScrollSpeed }) => {
     const isActive = scrollSpeed.px === SCROLL_SPEEDS[speed].px;
     return (
       <button
         type="button"
         className={isActive ? styles.active : ''}
-        onClick={() => setScrollSpeed(SCROLL_SPEEDS[speed])}
+        onClick={() => {
+          setScrollSpeed(SCROLL_SPEEDS[speed]);
+          setShowScrollSpeed(false);
+        }}
         tabIndex={isOverlayOpen ? -1 : undefined}
       >
         {speed === 'vs' && (isActive ? <IconSlowFilled /> : <IconSlow />)}
@@ -132,17 +123,28 @@ const AutoScrollMenu = ({ isScroll, setIsScroll, isOverlayOpen }: AutoScrollMenu
       <button
         type="button"
         className={styles.scrollBtn}
-        onClick={() => setIsScroll(!isScroll)}
+        onClick={() => {
+          setIsScroll(!isScroll);
+          setShowScrollSpeed(!isScroll);
+
+          if (!isScroll) {
+            setActiveMenu('scroll');
+          } else {
+            setActiveMenu(null);
+          }
+        }}
         tabIndex={isOverlayOpen ? -1 : 1}
       >
         {isScroll ? <IconClose /> : <IconArrowDown />}
       </button>
 
-      <div className={`${styles.scrollSpeed} ${!isScroll || !showScrollSpeed ? styles.scrollSpeedCollapsed : ''}`}>
-        {map(SCROLL_SPEEDS, (_, key: ScrollSpeed) => (
-          <ScrollSpeedBtn key={key} speed={key} />
-        ))}
-      </div>
+      {activeMenu === 'scroll' && (
+        <div className={`${styles.scrollSpeed} ${!isScroll || !showScrollSpeed ? styles.scrollSpeedCollapsed : ''}`}>
+          {map(SCROLL_SPEEDS, (_, key: ScrollSpeed) => (
+            <ScrollSpeedBtn key={key} speed={key} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

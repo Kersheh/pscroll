@@ -3,6 +3,8 @@ export function importAllFiles(r: __WebpackModuleApi.RequireContext) {
   return r.keys().reduce((acc, val) => ({ ...acc, [val.replace('./', '')]: r(val).default }), {});
 }
 
+export const requireContextMediaDefaults: [boolean, RegExp] = [false, /\.(gif|png|jpe?g|svg|mp4)$/i];
+
 // validate if filename is a supported image type
 export const isImage = (file: string) => /\.(gif|png|jpe?g|svg)$/i.test(file);
 

@@ -1,20 +1,20 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { shuffle, fill } from 'lodash';
+import { shuffle, fill, filter, merge } from 'lodash';
 import useBreakpoint from 'use-breakpoint';
 
-import { importAllFiles } from 'src/utils';
 import { BREAKPOINTS, BREAKPOINT_COLUMNS } from 'src/utils/constants';
 import MediaContainer from 'src/components/MediaContainer/MediaContainer';
 import styles from './App.module.scss';
 import MediaOverlayContainer from 'src/components/MediaOverlayContainer/MediaOverlayContainer';
-import AutoScrollMenu from 'src/components/AutoScrollMenu/AutoScrollMenu';
-
-// import gallery of media directly from project; TODO: enable user to select folder from UI
-const importedMedia: Record<string, string> = importAllFiles(
-  require.context('../../media', false, /\.(gif|png|jpe?g|svg|mp4)$/i)
-);
+import MenuBar from 'src/components/MenuBar/MenuBar';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from 'src/store/store';
+import { setFolderOptionsAction } from 'src/components/FileSelectMenu/sliceReducer';
+import { importedMediaMap } from './media';
 
 const App = () => {
+  const dispatch = useDispatch();
+  const { selectedFolders } = useSelector((state: RootState) => state.fileSelect);
   const LOAD_MORE_THRESHOLD = 10;
   const { breakpoint } = useBreakpoint(BREAKPOINTS, 'lg');
   const [mediaSrcs, setMediaSrcs] = useState<Array<string>>([]);
@@ -25,8 +25,19 @@ const App = () => {
 
   const columnCount = BREAKPOINT_COLUMNS[breakpoint] ?? 1;
 
-  // set media srcs from imported media and randomize order
-  useEffect(() => importedMedia && setMediaSrcs(shuffle(importedMedia)), []);
+  // set possible folder options based on imported media map
+  useEffect(() => {
+    dispatch(setFolderOptionsAction(Object.keys(importedMediaMap)));
+  }, [importedMediaMap]);
+
+  // set media srcs from imported media based on enabled folders and randomize order
+  useEffect(() => {
+    if (importedMediaMap) {
+      const filteredMedia = filter(importedMediaMap, (_, key) => selectedFolders.includes(key));
+      const media = merge({}, ...filteredMedia);
+      setMediaSrcs(shuffle(media));
+    }
+  }, [selectedFolders]);
 
   // scroll to top on pageload in event client refreshes browser
   useEffect(() => {
@@ -43,7 +54,7 @@ const App = () => {
     return columns.map((_, i) =>
       mediaSrcs
         .slice(0, currentLoadThreshold)
-        .map((_, j: number) => {
+        .map((_, j) => {
           const splitIndex = j * columnCount + i;
           return mediaSrcs[splitIndex];
         })
@@ -82,7 +93,7 @@ const App = () => {
 
   // dynamically increases total media load threshold per column at bottom of page
   const onScrollHandler = useCallback(() => {
-    const OFFSET = 240;
+    const OFFSET = 720;
     if (window.innerHeight + window.scrollY + OFFSET >= document.body.scrollHeight) {
       setCurrentLoadThreshold(currentLoadThreshold + LOAD_MORE_THRESHOLD);
     }
@@ -126,7 +137,13 @@ const App = () => {
         ))}
       </div>
 
-      <AutoScrollMenu isScroll={isScroll} setIsScroll={setIsScroll} isOverlayOpen={!!activeOverlayMediaSrc} />
+      <MenuBar
+        autoScrollMenuProps={{
+          isScroll: isScroll,
+          setIsScroll: setIsScroll,
+          isOverlayOpen: !!activeOverlayMediaSrc
+        }}
+      />
 
       {activeOverlayMediaSrc && (
         <MediaOverlayContainer

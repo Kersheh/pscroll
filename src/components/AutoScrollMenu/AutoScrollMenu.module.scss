@@ -1,32 +1,36 @@
-@import 'src/styles/partials/mixins';
+@import 'src/styles/partials/colors';
 
 .autoScrollMenu {
-  .scrollBtn,
-  .scrollSpeed {
-    @include action-btn;
-    box-shadow: 0 0 10px rgba($black, 0.7);
-  }
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: inherit;
 
   .scrollBtn {
-    height: 3rem;
-    width: 3rem;
-    bottom: 1rem;
-    left: 1rem;
+    border: 0;
+    background-color: transparent;
+    color: $white;
+    width: 100%;
+    height: inherit;
+    cursor: pointer;
+  
+    > svg {
+      fill: $white;
+      height: 24px;
+    }
   }
 
   .scrollSpeed {
-    height: 202px;
-    width: 3rem;
-    bottom: 4.4rem;
-    left: 1rem;
-    transition: height 300ms ease-in-out;
-    cursor: default;
+    position: absolute;
+    height: 46px;
+    width: 100vw;
+    left: 0;
+    bottom: 46px;
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    border-radius: 3rem;
-    overflow: hidden;
+    background: #2c313c;
   
     button {
       cursor: pointer;
@@ -34,7 +38,13 @@
       border: 0;
       color: $white;
       text-transform: uppercase;
-      padding: 0.35rem 0;
+      height: 24px;
+      flex: 1;
+
+      > svg {
+        fill: $white;
+        height: 24px;
+      }
   
       &.active {
         font-weight: 700;
@@ -42,7 +52,7 @@
     }
   
     &Collapsed {
-      height: 0;
+      display: none;
     }
   }
 }
